@@ -60,3 +60,11 @@ ax2.tick_params(axis='y', labelcolor='tab:orange')
 plt.title(f"{ticker} Prices and Returns")
 fig.tight_layout()
 plt.show()
+
+import yfinance as yf
+
+"""Now plot the market (DOW, NASDAQ OR S&P500) returns & compare it to the volatility of the industry index."""
+Market = yf.Ticker("DJI").history(start=CLOSINGS.index[start].split(" ")[0], end=CLOSINGS.index[-1].split(" ")[0], interval='1d')["Close"]
+market_abs_returns = np.abs(np.log(Market)/np.log(Market.shift()))
+plt.plot(market_abs_returns)
+plt.show()
