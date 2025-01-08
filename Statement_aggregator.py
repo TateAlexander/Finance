@@ -256,7 +256,7 @@ class FinData:
         """Once the statements are organized into a dict together..."""
         
     
-    def _accting_item_info(self):
+    def _accting_item_info(self, ticker, startDate, endDate, filingType="10-Q"):
         """Organize the statement info given from the dictionaries into data frames for each statement"""
         finished_stmnts = []
 
@@ -264,7 +264,7 @@ class FinData:
         main_statements_dict = defaultdict(list)
 
         #   Look for BalanceSheets, StatementsOfIncome, StatementsOfCashFlows and StatementsOfShareholdersEquity. Collection them in a dictionary, so all the statement types are together
-        statements = self._getfiling_info("PDM", "2022-01-01", "2023-01-01", filingType="10-Q") 
+        statements = self._getfiling_info(ticker, startDate, endDate, filingType=filingType) 
         for statement_info_dict in statements:
             for section in statement_info_dict:
                 if section in main_statements:
@@ -294,15 +294,16 @@ class FinData:
                     """IMPORTANT!!!!!! MOST OF THE INFO DICTS WITH A SEGMENT KEY ARE DUPLICATES THAT CAN BE IGNORED FOR NOW. THERES COPIES OF ITEM DATA THAT DOESNT HAVE SEGMENT IN THEIR INFO DICT. FILTER THESE OUT!"""
                     #   Skip the dicts that contain the key "segments"
 
-                    if "segment" not in info_dict.keys():
-                        date = f"{info_dict['period']['startDate']}_{info_dict['period']['endDate']}" if len(info_dict["period"].keys()) == 2 else info_dict["period"]['instant']
+                    if type(info_dict) == dict and "segment" not in info_dict.keys():
+                        if "value" in info_dict.keys():
+                            date = f"{info_dict['period']['startDate']}_{info_dict['period']['endDate']}" if len(info_dict["period"].keys()) == 2 else info_dict["period"]['instant']
 
-                        if date not in used_dates:
-                            value = float(info_dict["value"]) * 10**int(info_dict["decimals"]) if type(info_dict["decimals"]) == int else info_dict["value"]
-                            items_groups.append((item, date, value))
-                            used_dates.add(date)
-                        else:
-                            continue
+                            if date not in used_dates:
+                                value = float(info_dict["value"]) * 10**int(info_dict["decimals"]) if type(info_dict["decimals"]) == int else info_dict["value"]
+                                items_groups.append((item, date, value))
+                                used_dates.add(date)
+                            else:
+                                continue
 
             #   Organize the rows (items) and cols (dates).     MAKE SURE TO SORT THE DATES BEFORE THE BECOME THE COLS OF THE DF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             cols = []
@@ -330,11 +331,9 @@ class FinData:
                 stmnt_df.at[item, date] = value
             finished_stmnts.append(stmnt_df)
         
-            
-        
         return finished_stmnts
 
 
-a = FinData(["TSLA", "AAPL", "APLE", "PDM"])
 
-print(a._accting_item_info())
+a = FinData(["TSLA", "AAPL", "APLE", "PDM"])
+print(a._accting_item_info("APLE", "2020-01-01", "2023-01-01"))
