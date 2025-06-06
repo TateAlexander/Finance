@@ -332,3 +332,49 @@ def simulate(mean, gain, loss):
     return total
 
 # print(simulate(0.31, 3, 7))
+#------------------------------------
+
+# optimal_macd(signals, dia)
+t = ["ERX", "ERY", "TQQQ", "SQQQ", 'VOX', 'XLU', 'VNQ', 'GDX', 'XLI', 'XLV', 'XLF', 'XLE', 'XLP', 'XLY']
+# buySell(t)
+
+
+def intervalLength(signal):
+    macdIntervalLengths = []
+
+    META.cal_macd(signal[0], signal[1])
+    for interval in META.macd_intervals():
+
+        buySell = "buy below" if interval["macd signal"][len(interval)-1] > 0 else "sell below"
+        if buySell == 'buy below':
+            macdIntervalLengths.append(len(interval))
+            # print(interval)
+            # print(len(interval))
+
+    return macdIntervalLengths
+
+x = np.arange(1, 17, 1)
+from scipy.stats import geom
+
+seqUpDays = np.array(intervalLength((1,2)))
+dist = Pmf.from_seq(seqUpDays)
+dist.normalize()
+obs_freq = np.histogram(seqUpDays, bins=np.arange(1, seqUpDays.max()))[0]
+
+print(obs_freq)
+
+mean = 1/dist.mean()
+print(mean)
+g = geom(mean).pmf(k=x)
+expected_freq = np.array(len(seqUpDays) * g)
+print(f"pre expected freq: {expected_freq}")
+expected_freq *= (obs_freq.sum()/expected_freq.sum())
+
+print(f"post expected freq: {expected_freq}")
+
+from scipy.stats import chisquare
+
+max_x = dist.max_prob()
+chi2_stat, p_val = chisquare(f_obs=obs_freq, f_exp=expected_freq)
+print(chi2_stat, p_val)
+
