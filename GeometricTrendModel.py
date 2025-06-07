@@ -378,3 +378,20 @@ max_x = dist.max_prob()
 chi2_stat, p_val = chisquare(f_obs=obs_freq, f_exp=expected_freq)
 print(chi2_stat, p_val)
 
+
+#    Now calculate the expected value of the trend
+
+def geomEv(loss, gain, rounds, p):
+    evs = []
+    profit = 0
+    for r in rounds:
+        ev = (gain*(r-1) - loss)*p*(1-p)**(r-1)
+        profit += ev
+        evs.append(ev)
+
+    print(profit)
+
+    return evs
+
+plt.plot(geomEv(1.4, 1, [r+1 for r in range(30)], 1/2.5))
+plt.show()
